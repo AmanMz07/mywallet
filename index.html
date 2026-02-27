@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ff6b35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MyWallet">
+<title>MyWallet — Student Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --orange: #ff6b35;
+    --orange-light: #ff8c5a;
+    --orange-pale: #fff3ee;
+    --green: #22c55e;
+    --green-pale: #f0fdf4;
+    --red: #ef4444;
+    --red-pale: #fef2f2;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --yellow: #f59e0b;
+    --bg: #fafaf8;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 90px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--orange);
+    padding: 52px 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -20px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+  .app-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  .date-badge {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+  }
+  .balance-section { position: relative; z-index: 1; }
+  .balance-label {
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .balance-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .balance-amount span { font-size: 28px; }
+  .balance-sub {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .balance-sub-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .balance-sub-item .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+  }
+  .balance-sub-item.red .dot { background: #fca5a5; }
+  .balance-sub-item.green .dot { background: #86efac; }
+
+  /* ALERT BANNER */
+  .alert-banner {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    margin: 16px 16px 0;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: #92400e;
+    display: none;
+  }
+  .alert-banner.show { display: flex; align-items: center; gap: 8px; }
+
+  /* MAIN CONTENT */
+  .content { padding: 16px; }
+
+  /* CARDS ROW */
+  .cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .credit-card-mini {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .credit-card-mini:active { transform: scale(0.97); }
+  .card-mini-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .card-mini-due {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--red);
+  }
+  .card-mini-limit {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .card-mini-bar {
+    margin-top: 8px;
+    height: 4px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .card-mini-bar-fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  /* SECTION CARD */
+  .section-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    border: 1.5px solid var(--border);
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .icon-orange { background: var(--orange-pale); }
+  .icon-green { background: var(--green-pale); }
+  .icon-blue { background: #eff6ff; }
+
+  /* QUICK ADD BUTTONS */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 4px;
+    background: var(--orange-pale);
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .quick-btn:active, .quick-btn.selected {
+    background: var(--orange);
+    border-color: var(--orange);
+    transform: scale(0.96);
+  }
+  .quick-btn:active .qb-icon, .quick-btn.selected .qb-icon { filter: brightness(10); }
+  .quick-btn:active .qb-label, .quick-btn.selected .qb-label { color: white; }
+  .qb-icon { font-size: 20px; }
+  .qb-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center; line-height: 1.2; }
+
+  /* AMOUNT INPUT */
+  .amount-input-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .amount-symbol {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+  .amount-input {
+    width: 100%;
+    padding: 14px 16px 14px 38px;
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .amount-input:focus { border-color: var(--orange); }
+  .amount-input::placeholder { color: #d1d5db; font-weight: 400; font-size: 18px; }
+
+  .note-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .note-input:focus { border-color: var(--orange); }
+
+  /* PAYMENT METHOD SELECTOR */
+  .pay-methods {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .pay-method {
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: white;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .pay-method.selected {
+    background: var(--text);
+    border-color: var(--text);
+    color: white;
+  }
+
+  /* BUTTONS */
+  .btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:active { transform: scale(0.98); background: var(--orange-light); }
+
+  .btn-green {
+    background: var(--green);
+  }
+  .btn-green:active { background: #16a34a; }
+
+  /* TRANSACTION LIST */
+  .txn-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .txn-item:last-child { border-bottom: none; }
+  .txn-icon {
+    width: 42px; height: 42px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .txn-icon.expense { background: var(--orange-pale); }
+  .txn-icon.credit { background: var(--green-pale); }
+  .txn-info { flex: 1; min-width: 0; }
+  .txn-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .txn-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .txn-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .txn-amount.expense { color: var(--red); }
+  .txn-amount.credit { color: var(--green); }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-top: 1.5px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-icon { font-size: 22px; transition: transform 0.15s ease; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+  .nav-item.active .nav-icon { transform: translateY(-2px); }
+  .nav-item.active .nav-label { color: var(--orange); }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* CHART */
+  .chart-wrap {
+    position: relative;
+    height: 200px;
+    margin-top: 8px;
+  }
+
+  /* CARDS DETAIL PAGE */
+  .card-detail {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    border: 1.5px solid var(--border);
+  }
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .card-bank-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .card-bank-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .card-due-badge {
+    background: var(--red-pale);
+    color: var(--red);
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    text-align: right;
+  }
+  .card-due-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--red);
+    text-align: right;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .card-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .card-info-box {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .card-info-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .card-info-key {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .card-usage-bar {
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .card-usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--red));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+  .card-usage-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* ADD CREDIT PAGE */
+  .credit-source-select {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .credit-source-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'DM Sans', sans-serif;
+    text-align: left;
+  }
+  .credit-source-btn.selected {
+    border-color: var(--green);
+    background: var(--green-pale);
+  }
+  .credit-source-btn .cs-icon { font-size: 24px; }
+  .credit-source-btn .cs-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .credit-source-btn .cs-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* REPORTS */
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
+  }
+  .stat-box-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .stat-box-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.5; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 999;
+    opacity: 0;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* SETTINGS / CLEAR */
+  .danger-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--red-pale);
+    color: var(--red);
+    border: 1.5px solid #fecaca;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .month-selector button {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .month-selector .month-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .card-txn-list { margin-top: 14px; }
+  .card-txn-add {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .card-txn-add input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+  .card-txn-add input:focus { border-color: var(--orange); }
+  .card-txn-add button {
+    padding: 10px 16px;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .pay-card-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+
+  .install-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .install-banner .ib-text { flex: 1; }
+  .install-banner .ib-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .install-banner .ib-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .install-banner .ib-icon { font-size: 28px; }
+
+  select.styled-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: white;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 10px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+  select.styled-select:focus { border-color: var(--orange); }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PAGE: HOME -->
+<div class="page active" id="page-home">
+  <div class="header">
+    <div class="header-top">
+      <div class="app-name">💰 MyWallet</div>
+      <div class="date-badge" id="header-date"></div>
+    </div>
+    <div class="balance-section">
+      <div class="balance-label">Cash Balance</div>
+      <div class="balance-amount"><span>₹</span><span id="main-balance">0</span></div>
+      <div class="balance-sub">
+        <div class="balance-sub-item green"><div class="dot"></div><span id="total-credited">+₹0 added</span></div>
+        <div class="balance-sub-item red"><div class="dot"></div><span id="today-spent">₹0 today</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-banner" id="alert-banner">
+    ⚠️ <span id="alert-text"></span>
+  </div>
+
+  <div class="content">
+    <!-- INSTALL BANNER -->
+    <div class="install-banner" id="install-banner" style="display:none" onclick="installApp()">
+      <div class="ib-icon">📲</div>
+      <div class="ib-text">
+        <div class="ib-title">Install as App</div>
+        <div class="ib-sub">Add to home screen for quick access</div>
+      </div>
+      <div>→</div>
+    </div>
+
+    <!-- CREDIT CARDS MINI -->
+    <div class="cards-row">
+      <div class="credit-card-mini" onclick="goToCards()">
+        <div class="card-mini-name">SuperMoney</div>
+        <div class="card-mini-due">₹<span id="sm-due-home">0</span></div>
+        <div class="card-mini-limit">of ₹900 limit</div>
+        <div class="card-mini-bar"><div class="card-mini-bar-fill" id="sm-bar-home" style="width:0%"></div></div>
+      </div>
+      <div class="credit-card-mini" onclick="goToCards()">
+        <div class="card-mini-name">Paytm Postpaid</div>
+        <div class="card-mini-due">₹<span id="pp-due-home">0</span></div>
+        <div class="card-mini-limit">of ₹1000 limit</div>
+        <div class="card-mini-bar"><div class="card-mini-bar-fill" id="pp-bar-home" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon icon-orange">📋</div>
+        Recent Transactions
+      </div>
+      <div id="recent-txns">
+        <div class="empty-state">
+          <div class="empty-icon">🧾</div>
+          <p>No transactions yet.<br>Tap <b>Add Expense</b> to get started!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ADD EXPENSE -->
+<div class="page" id="page-add">
+  <div class="header" style="padding-top: 52px; padding-bottom: 20px;">
+    <div class="header-top">
+      <div class="app-name">➕ Add Expense</div>
+      <div class="date-badge" id="add-date"></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-orange">🏷️</div> What did you buy?</div>
+      <div class="quick-grid" id="quick-grid"></div>
+      <input class="note-input" id="custom-item" placeholder="Or type item name..." />
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-orange">💵</div> Amount</div>
+      <div class="amount-input-wrap">
+        <span class="amount-symbol">₹</span>
+        <input class="amount-input" id="expense-amount" type="number" inputmode="numeric" placeholder="0" />
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-blue">📱</div> Paid via</div>
+      <div class="pay-methods" id="pay-methods-expense"></div>
+    </div>
+
+    <button class="btn-primary" onclick="addExpense()">Add Expense</button>
+  </div>
+</div>
+
+<!-- PAGE: ADD MONEY -->
+<div class="page" id="page-credit">
+  <div class="header" style="padding-top: 52px; padding-bottom: 20px;">
+    <div class="header-top">
+      <div class="app-name">💸 Add Money</div>
+      <div class="date-badge" id="credit-date"></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-green">🙏</div> Source</div>
+      <div class="credit-source-select">
+        <button class="credit-source-btn selected" onclick="selectCreditSource(this, 'Parents')" data-source="Parents">
+          <span class="cs-icon">👨‍👩‍👦</span>
+          <div><div class="cs-label">Parents</div><div class="cs-sub">Money from family</div></div>
+        </button>
+        <button class="credit-source-btn" onclick="selectCreditSource(this, 'Scholarship')" data-source="Scholarship">
+          <span class="cs-icon">🎓</span>
+          <div><div class="cs-label">Scholarship</div><div class="cs-sub">College scholarship/stipend</div></div>
+        </button>
+        <button class="credit-source-btn" onclick="selectCreditSource(this, 'Other')" data-source="Other">
+          <span class="cs-icon">💼</span>
+          <div><div class="cs-label">Other</div><div class="cs-sub">Part-time, freelance, etc.</div></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-green">💵</div> Amount Received</div>
+      <div class="amount-input-wrap">
+        <span class="amount-symbol">₹</span>
+        <input class="amount-input" id="credit-amount" type="number" inputmode="numeric" placeholder="0" />
+      </div>
+      <input class="note-input" id="credit-note" placeholder="Add a note (optional)..." />
+    </div>
+
+    <button class="btn-primary btn-green" onclick="addCredit()">Add to Wallet</button>
+  </div>
+</div>
+
+<!-- PAGE: CARDS -->
+<div class="page" id="page-cards">
+  <div class="header" style="padding-top: 52px; padding-bottom: 20px;">
+    <div class="header-top">
+      <div class="app-name">💳 Credit Cards</div>
+      <div class="date-badge" id="cards-date"></div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- SUPERMONEY CARD -->
+    <div class="card-detail">
+      <div class="card-header-row">
+        <div>
+          <div class="card-bank-name">SuperMoney</div>
+          <div class="card-bank-sub">Utkarsh Small Finance Bank · FD-backed</div>
+        </div>
+        <div>
+          <div class="card-due-badge">₹<span id="sm-due-detail">0</span></div>
+          <div class="card-due-label">Due This Month</div>
+        </div>
+      </div>
+      <div class="card-info-row">
+        <div class="card-info-box">
+          <div class="card-info-val">₹900</div>
+          <div class="card-info-key">Credit Limit</div>
+        </div>
+        <div class="card-info-box">
+          <div class="card-info-val" id="sm-available">₹900</div>
+          <div class="card-info-key">Available</div>
+        </div>
+        <div class="card-info-box">
+          <div class="card-info-val" style="color:var(--red)">15th</div>
+          <div class="card-info-key">Due Date</div>
+        </div>
+      </div>
+      <div class="card-usage-bar"><div class="card-usage-fill" id="sm-usage-fill" style="width:0%"></div></div>
+      <div class="card-usage-label"><span>₹0 used</span><span id="sm-usage-label">0% of ₹900</span></div>
+
+      <!-- ADD CARD EXPENSE -->
+      <div class="section-title" style="margin-top:14px; margin-bottom:8px; font-size:14px;">
+        <div class="icon icon-orange" style="width:24px;height:24px;font-size:13px;">➕</div> Add Expense
+      </div>
+      <select class="styled-select" id="sm-item-select">
+        <option value="">Select item...</option>
+        <option>Petrol / Fuel</option>
+        <option>Vegetables & Fruits</option>
+        <option>Grocery & Household</option>
+        <option>Street Food / Chai</option>
+        <option>Room Rent</option>
+        <option>Electricity Bill</option>
+        <option>Mobile Recharge</option>
+        <option>Online Shopping</option>
+        <option>Other</option>
+      </select>
+      <div class="card-txn-add">
+        <input type="number" inputmode="numeric" placeholder="₹ Amount" id="sm-add-amount" />
+        <button onclick="addCardExpense('supermoney')">Add</button>
+      </div>
+
+      <div class="card-txn-list" id="sm-txns"></div>
+      <button class="pay-card-btn" onclick="payCard('supermoney')">✅ Mark Bill as Paid</button>
+    </div>
+
+    <!-- PAYTM POSTPAID -->
+    <div class="card-detail">
+      <div class="card-header-row">
+        <div>
+          <div class="card-bank-name">Paytm Postpaid</div>
+          <div class="card-bank-sub">Suryoday Small Finance Bank · No deposit</div>
+        </div>
+        <div>
+          <div class="card-due-badge">₹<span id="pp-due-detail">0</span></div>
+          <div class="card-due-label">Due This Month</div>
+        </div>
+      </div>
+      <div class="card-info-row">
+        <div class="card-info-box">
+          <div class="card-info-val">₹1000</div>
+          <div class="card-info-key">Credit Limit</div>
+        </div>
+        <div class="card-info-box">
+          <div class="card-info-val" id="pp-available">₹1000</div>
+          <div class="card-info-key">Available</div>
+        </div>
+        <div class="card-info-box">
+          <div class="card-info-val" style="color:var(--red)">15th</div>
+          <div class="card-info-key">Due Date</div>
+        </div>
+      </div>
+      <div class="card-usage-bar"><div class="card-usage-fill" id="pp-usage-fill" style="width:0%"></div></div>
+      <div class="card-usage-label"><span>₹0 used</span><span id="pp-usage-label">0% of ₹1000</span></div>
+
+      <div class="section-title" style="margin-top:14px; margin-bottom:8px; font-size:14px;">
+        <div class="icon icon-orange" style="width:24px;height:24px;font-size:13px;">➕</div> Add Expense
+      </div>
+      <select class="styled-select" id="pp-item-select">
+        <option value="">Select item...</option>
+        <option>Petrol / Fuel</option>
+        <option>Vegetables & Fruits</option>
+        <option>Grocery & Household</option>
+        <option>Street Food / Chai</option>
+        <option>Room Rent</option>
+        <option>Electricity Bill</option>
+        <option>Mobile Recharge</option>
+        <option>Online Shopping</option>
+        <option>Other</option>
+      </select>
+      <div class="card-txn-add">
+        <input type="number" inputmode="numeric" placeholder="₹ Amount" id="pp-add-amount" />
+        <button onclick="addCardExpense('paytm-postpaid')">Add</button>
+      </div>
+
+      <div class="card-txn-list" id="pp-txns"></div>
+      <button class="pay-card-btn" onclick="payCard('paytm-postpaid')">✅ Mark Bill as Paid</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: REPORTS -->
+<div class="page" id="page-reports">
+  <div class="header" style="padding-top: 52px; padding-bottom: 20px;">
+    <div class="header-top">
+      <div class="app-name">📊 Reports</div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="month-selector">
+      <button onclick="changeMonth(-1)">◀</button>
+      <div class="month-label" id="report-month-label"></div>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-box-val" id="report-total">₹0</div>
+        <div class="stat-box-label">Total Spent</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="report-txns">0</div>
+        <div class="stat-box-label">Transactions</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-blue">📊</div> Spending by Category</div>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-orange">📱</div> By Payment Method</div>
+      <div class="chart-wrap"><canvas id="paymentChart"></canvas></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title"><div class="icon icon-green">📋</div> All Transactions</div>
+      <div id="all-txns-list"></div>
+    </div>
+
+    <button class="danger-btn" onclick="clearAllData()">🗑️ Clear All Data</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('home', this)">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">Home</div>
+  </button>
+  <button class="nav-item" onclick="switchPage('add', this)">
+    <div class="nav-icon">➕</div>
+    <div class="nav-label">Expense</div>
+  </button>
+  <button class="nav-item" onclick="switchPage('credit', this)">
+    <div class="nav-icon">💸</div>
+    <div class="nav-label">Add Money</div>
+  </button>
+  <button class="nav-item" onclick="switchPage('cards', this)">
+    <div class="nav-icon">💳</div>
+    <div class="nav-label">Cards</div>
+  </button>
+  <button class="nav-item" onclick="switchPage('reports', this)">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Reports</div>
+  </button>
+</nav>
+
+<script>
+// ============================================================
+// DATA LAYER
+// ============================================================
+const QUICK_ITEMS = [
+  { label: 'Petrol', icon: '⛽', category: 'Fuel' },
+  { label: 'Vegetables', icon: '🥦', category: 'Food & Dining' },
+  { label: 'Grocery', icon: '🛒', category: 'Grocery & Household' },
+  { label: 'Chai/Food', icon: '☕', category: 'Food & Dining' },
+  { label: 'Room Rent', icon: '🏠', category: 'Bills & Utilities' },
+  { label: 'Electricity', icon: '💡', category: 'Bills & Utilities' },
+  { label: 'Recharge', icon: '📱', category: 'Bills & Utilities' },
+  { label: 'Other', icon: '📦', category: 'Other' },
+];
+
+const PAY_METHODS = ['GPay', 'Paytm', 'BHIM', 'SuperMoney', 'Paytm Postpaid', 'Cash'];
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let selectedItem = null;
+let selectedPayMethod = 'GPay';
+let selectedCreditSource = 'Parents';
+let reportMonth = new Date().getMonth();
+let reportYear = new Date().getFullYear();
+let categoryChart = null;
+let paymentChart = null;
+let deferredPrompt = null;
+
+function getData() {
+  return JSON.parse(localStorage.getItem('mywallet_data') || '{"transactions":[],"cards":{"supermoney":{"due":0,"txns":[]},"paytm-postpaid":{"due":0,"txns":[]}}}');
+}
+
+function saveData(data) {
+  localStorage.setItem('mywallet_data', JSON.stringify(data));
+}
+
+function formatCurrency(n) {
+  return '₹' + Number(n).toLocaleString('en-IN');
+}
+
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }) + ' · ' +
+    d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  renderDateHeaders();
+  renderQuickItems();
+  renderPayMethods();
+  updateHome();
+  checkAlerts();
+  renderReports();
+
+  // PWA install
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'flex';
+  });
+});
+
+function renderDateHeaders() {
+  const now = new Date();
+  const label = now.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' });
+  ['header-date','add-date','credit-date','cards-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+}
+
+function renderQuickItems() {
+  const grid = document.getElementById('quick-grid');
+  grid.innerHTML = QUICK_ITEMS.map((item, i) => `
+    <button class="quick-btn" onclick="selectQuickItem(this, ${i})">
+      <span class="qb-icon">${item.icon}</span>
+      <span class="qb-label">${item.label}</span>
+    </button>
+  `).join('');
+}
+
+function renderPayMethods() {
+  const container = document.getElementById('pay-methods-expense');
+  container.innerHTML = PAY_METHODS.map((m, i) => `
+    <div class="pay-method ${i===0?'selected':''}" onclick="selectPayMethod(this, '${m}')">${m}</div>
+  `).join('');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'home') updateHome();
+  if (name === 'reports') renderReports();
+  if (name === 'cards') renderCards();
+  window.scrollTo(0, 0);
+}
+
+function goToCards() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-cards').classList.add('active');
+  document.querySelectorAll('.nav-item')[3].classList.add('active');
+  renderCards();
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// SELECTIONS
+// ============================================================
+function selectQuickItem(btn, idx) {
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedItem = QUICK_ITEMS[idx];
+  document.getElementById('custom-item').value = '';
+}
+
+function selectPayMethod(el, method) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayMethod = method;
+}
+
+function selectCreditSource(btn, source) {
+  document.querySelectorAll('.credit-source-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCreditSource = source;
+}
+
+// ============================================================
+// ADD EXPENSE
+// ============================================================
+function addExpense() {
+  const amount = parseFloat(document.getElementById('expense-amount').value);
+  if (!amount || amount <= 0) { showToast('Enter a valid amount!'); return; }
+
+  const customItem = document.getElementById('custom-item').value.trim();
+  const itemName = customItem || (selectedItem ? selectedItem.label : null);
+  if (!itemName) { showToast('Select or type what you bought!'); return; }
+
+  const category = selectedItem ? selectedItem.category : 'Other';
+  const data = getData();
+
+  const txn = {
+    id: Date.now(),
+    type: 'expense',
+    amount,
+    item: itemName,
+    category,
+    payMethod: selectedPayMethod,
+    timestamp: Date.now()
+  };
+
+  data.transactions.unshift(txn);
+
+  // If paid via card, add to card due
+  if (selectedPayMethod === 'SuperMoney') {
+    data.cards['supermoney'].due = (data.cards['supermoney'].due || 0) + amount;
+    data.cards['supermoney'].txns = data.cards['supermoney'].txns || [];
+    data.cards['supermoney'].txns.unshift({ item: itemName, amount, timestamp: Date.now() });
+  } else if (selectedPayMethod === 'Paytm Postpaid') {
+    data.cards['paytm-postpaid'].due = (data.cards['paytm-postpaid'].due || 0) + amount;
+    data.cards['paytm-postpaid'].txns = data.cards['paytm-postpaid'].txns || [];
+    data.cards['paytm-postpaid'].txns.unshift({ item: itemName, amount, timestamp: Date.now() });
+  }
+
+  saveData(data);
+
+  // Reset
+  document.getElementById('expense-amount').value = '';
+  document.getElementById('custom-item').value = '';
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+  selectedItem = null;
+
+  showToast(`✅ ${formatCurrency(amount)} added for ${itemName}`);
+  updateHome();
+}
+
+// ============================================================
+// ADD CREDIT
+// ============================================================
+function addCredit() {
+  const amount = parseFloat(document.getElementById('credit-amount').value);
+  if (!amount || amount <= 0) { showToast('Enter a valid amount!'); return; }
+
+  const note = document.getElementById('credit-note').value.trim();
+  const data = getData();
+
+  data.transactions.unshift({
+    id: Date.now(),
+    type: 'credit',
+    amount,
+    item: selectedCreditSource,
+    note,
+    timestamp: Date.now()
+  });
+
+  saveData(data);
+  document.getElementById('credit-amount').value = '';
+  document.getElementById('credit-note').value = '';
+
+  showToast(`💚 ${formatCurrency(amount)} added to wallet!`);
+  updateHome();
+}
+
+// ============================================================
+// CARD EXPENSES
+// ============================================================
+function addCardExpense(cardKey) {
+  const amountEl = document.getElementById(cardKey === 'supermoney' ? 'sm-add-amount' : 'pp-add-amount');
+  const itemEl = document.getElementById(cardKey === 'supermoney' ? 'sm-item-select' : 'pp-item-select');
+  const amount = parseFloat(amountEl.value);
+  const item = itemEl.value;
+
+  if (!amount || amount <= 0) { showToast('Enter a valid amount!'); return; }
+  if (!item) { showToast('Select an item!'); return; }
+
+  const limit = cardKey === 'supermoney' ? 900 : 1000;
+  const data = getData();
+  const card = data.cards[cardKey];
+  if ((card.due || 0) + amount > limit) { showToast('Exceeds credit limit!'); return; }
+
+  card.due = (card.due || 0) + amount;
+  card.txns = card.txns || [];
+  card.txns.unshift({ item, amount, timestamp: Date.now() });
+
+  // Also add to main transactions
+  data.transactions.unshift({
+    id: Date.now(),
+    type: 'expense',
+    amount,
+    item,
+    category: 'Credit Card',
+    payMethod: cardKey === 'supermoney' ? 'SuperMoney' : 'Paytm Postpaid',
+    timestamp: Date.now()
+  });
+
+  saveData(data);
+  amountEl.value = '';
+  itemEl.value = '';
+  renderCards();
+  updateHome();
+  showToast(`💳 ${formatCurrency(amount)} added to ${cardKey === 'supermoney' ? 'SuperMoney' : 'Paytm Postpaid'}`);
+}
+
+function payCard(cardKey) {
+  const data = getData();
+  const card = data.cards[cardKey];
+  const due = card.due || 0;
+  if (due === 0) { showToast('No dues to pay!'); return; }
+
+  if (confirm(`Mark ₹${due} as paid for ${cardKey === 'supermoney' ? 'SuperMoney' : 'Paytm Postpaid'}?`)) {
+    card.due = 0;
+    card.txns = [];
+    saveData(data);
+    renderCards();
+    updateHome();
+    showToast('✅ Bill marked as paid!');
+  }
+}
+
+// ============================================================
+// UPDATE HOME
+// ============================================================
+function updateHome() {
+  const data = getData();
+  const txns = data.transactions;
+
+  let cash = 0;
+  let totalCredited = 0;
+  txns.forEach(t => {
+    if (t.type === 'credit') { cash += t.amount; totalCredited += t.amount; }
+    else if (t.type === 'expense' && t.payMethod !== 'SuperMoney' && t.payMethod !== 'Paytm Postpaid') {
+      cash -= t.amount;
+    }
+  });
+
+  document.getElementById('main-balance').textContent = Math.max(0, cash).toLocaleString('en-IN');
+  document.getElementById('total-credited').textContent = `+${formatCurrency(totalCredited)} added`;
+
+  // Today's spending
+  const today = new Date().toDateString();
+  const todaySpent = txns
+    .filter(t => t.type === 'expense' && new Date(t.timestamp).toDateString() === today)
+    .reduce((s, t) => s + t.amount, 0);
+  document.getElementById('today-spent').textContent = `${formatCurrency(todaySpent)} today`;
+
+  // Card dues
+  const smDue = data.cards['supermoney'].due || 0;
+  const ppDue = data.cards['paytm-postpaid'].due || 0;
+  document.getElementById('sm-due-home').textContent = smDue.toLocaleString('en-IN');
+  document.getElementById('pp-due-home').textContent = ppDue.toLocaleString('en-IN');
+  document.getElementById('sm-bar-home').style.width = Math.min(100, (smDue/900)*100) + '%';
+  document.getElementById('pp-bar-home').style.width = Math.min(100, (ppDue/1000)*100) + '%';
+
+  // Recent txns (last 5)
+  const recent = txns.slice(0, 6);
+  const container = document.getElementById('recent-txns');
+  if (recent.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🧾</div><p>No transactions yet.<br>Tap <b>Add Expense</b> to get started!</p></div>`;
+    return;
+  }
+  container.innerHTML = recent.map(t => txnHTML(t)).join('');
+}
+
+function txnHTML(t) {
+  const isCredit = t.type === 'credit';
+  const icon = isCredit ? '💚' : (QUICK_ITEMS.find(q => q.label === t.item)?.icon || '📦');
+  return `
+    <div class="txn-item">
+      <div class="txn-icon ${isCredit ? 'credit' : 'expense'}">${icon}</div>
+      <div class="txn-info">
+        <div class="txn-name">${t.item}${t.note ? ' · ' + t.note : ''}</div>
+        <div class="txn-meta">${formatDateTime(t.timestamp)} · ${isCredit ? t.item : (t.payMethod || 'Cash')}</div>
+      </div>
+      <div class="txn-amount ${isCredit ? 'credit' : 'expense'}">${isCredit ? '+' : '-'}${formatCurrency(t.amount)}</div>
+    </div>`;
+}
+
+// ============================================================
+// RENDER CARDS PAGE
+// ============================================================
+function renderCards() {
+  const data = getData();
+
+  const smDue = data.cards['supermoney'].due || 0;
+  const ppDue = data.cards['paytm-postpaid'].due || 0;
+
+  document.getElementById('sm-due-detail').textContent = smDue.toLocaleString('en-IN');
+  document.getElementById('pp-due-detail').textContent = ppDue.toLocaleString('en-IN');
+
+  document.getElementById('sm-available').textContent = formatCurrency(Math.max(0, 900 - smDue));
+  document.getElementById('pp-available').textContent = formatCurrency(Math.max(0, 1000 - ppDue));
+
+  const smPct = Math.min(100, (smDue/900)*100);
+  const ppPct = Math.min(100, (ppDue/1000)*100);
+  document.getElementById('sm-usage-fill').style.width = smPct + '%';
+  document.getElementById('pp-usage-fill').style.width = ppPct + '%';
+  document.getElementById('sm-usage-label').textContent = `${smPct.toFixed(0)}% of ₹900`;
+  document.getElementById('pp-usage-label').textContent = `${ppPct.toFixed(0)}% of ₹1000`;
+
+  // Card txn lists
+  const smTxns = data.cards['supermoney'].txns || [];
+  const ppTxns = data.cards['paytm-postpaid'].txns || [];
+
+  document.getElementById('sm-txns').innerHTML = smTxns.length === 0
+    ? '<p style="color:var(--text-muted);font-size:13px;padding:8px 0;">No expenses this cycle</p>'
+    : smTxns.map(t => `
+        <div class="txn-item">
+          <div class="txn-icon expense">${QUICK_ITEMS.find(q=>q.label===t.item)?.icon||'📦'}</div>
+          <div class="txn-info"><div class="txn-name">${t.item}</div><div class="txn-meta">${formatDateTime(t.timestamp)}</div></div>
+          <div class="txn-amount expense">-${formatCurrency(t.amount)}</div>
+        </div>`).join('');
+
+  document.getElementById('pp-txns').innerHTML = ppTxns.length === 0
+    ? '<p style="color:var(--text-muted);font-size:13px;padding:8px 0;">No expenses this cycle</p>'
+    : ppTxns.map(t => `
+        <div class="txn-item">
+          <div class="txn-icon expense">${QUICK_ITEMS.find(q=>q.label===t.item)?.icon||'📦'}</div>
+          <div class="txn-info"><div class="txn-name">${t.item}</div><div class="txn-meta">${formatDateTime(t.timestamp)}</div></div>
+          <div class="txn-amount expense">-${formatCurrency(t.amount)}</div>
+        </div>`).join('');
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+function changeMonth(dir) {
+  reportMonth += dir;
+  if (reportMonth < 0) { reportMonth = 11; reportYear--; }
+  if (reportMonth > 11) { reportMonth = 0; reportYear++; }
+  renderReports();
+}
+
+function renderReports() {
+  document.getElementById('report-month-label').textContent = `${MONTHS[reportMonth]} ${reportYear}`;
+
+  const data = getData();
+  const txns = data.transactions.filter(t => {
+    const d = new Date(t.timestamp);
+    return t.type === 'expense' && d.getMonth() === reportMonth && d.getFullYear() === reportYear;
+  });
+
+  const total = txns.reduce((s, t) => s + t.amount, 0);
+  document.getElementById('report-total').textContent = formatCurrency(total);
+  document.getElementById('report-txns').textContent = txns.length;
+
+  // Category breakdown
+  const catMap = {};
+  txns.forEach(t => { catMap[t.category] = (catMap[t.category] || 0) + t.amount; });
+
+  // Payment method breakdown
+  const payMap = {};
+  txns.forEach(t => { payMap[t.payMethod] = (payMap[t.payMethod] || 0) + t.amount; });
+
+  const colors = ['#ff6b35','#22c55e','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#06b6d4'];
+
+  if (categoryChart) categoryChart.destroy();
+  if (paymentChart) paymentChart.destroy();
+
+  const catCtx = document.getElementById('categoryChart').getContext('2d');
+  const catLabels = Object.keys(catMap);
+  const catVals = Object.values(catMap);
+
+  if (catLabels.length === 0) {
+    catCtx.clearRect(0,0,300,200);
+  } else {
+    categoryChart = new Chart(catCtx, {
+      type: 'bar',
+      data: {
+        labels: catLabels,
+        datasets: [{
+          data: catVals,
+          backgroundColor: colors.slice(0, catLabels.length),
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { callback: v => '₹' + v }, grid: { color: '#f3f4f6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  const payCtx = document.getElementById('paymentChart').getContext('2d');
+  const payLabels = Object.keys(payMap);
+  const payVals = Object.values(payMap);
+
+  if (payLabels.length === 0) {
+    payCtx.clearRect(0,0,300,200);
+  } else {
+    paymentChart = new Chart(payCtx, {
+      type: 'bar',
+      data: {
+        labels: payLabels,
+        datasets: [{
+          data: payVals,
+          backgroundColor: colors.slice(0, payLabels.length),
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { callback: v => '₹' + v }, grid: { color: '#f3f4f6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // All txns list
+  const allContainer = document.getElementById('all-txns-list');
+  const allTxns = data.transactions.filter(t => {
+    const d = new Date(t.timestamp);
+    return d.getMonth() === reportMonth && d.getFullYear() === reportYear;
+  });
+  allContainer.innerHTML = allTxns.length === 0
+    ? '<div class="empty-state"><div class="empty-icon">📭</div><p>No transactions this month</p></div>'
+    : allTxns.map(t => txnHTML(t)).join('');
+}
+
+// ============================================================
+// ALERTS
+// ============================================================
+function checkAlerts() {
+  const today = new Date();
+  const day = today.getDate();
+  const alerts = [];
+
+  // 10 days before 15th = 5th of month
+  if (day >= 5 && day <= 14) {
+    const data = getData();
+    const smDue = data.cards['supermoney'].due || 0;
+    const ppDue = data.cards['paytm-postpaid'].due || 0;
+    const daysLeft = 15 - day;
+
+    if (smDue > 0) alerts.push(`SuperMoney due ${formatCurrency(smDue)} in ${daysLeft} days`);
+    if (ppDue > 0) alerts.push(`Paytm Postpaid due ${formatCurrency(ppDue)} in ${daysLeft} days`);
+  }
+
+  if (alerts.length > 0) {
+    document.getElementById('alert-banner').classList.add('show');
+    document.getElementById('alert-text').textContent = alerts.join(' · ');
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function clearAllData() {
+  if (confirm('Delete ALL data? This cannot be undone.')) {
+    localStorage.removeItem('mywallet_data');
+    updateHome();
+    showToast('All data cleared.');
+  }
+}
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    });
+  } else {
+    showToast('Open in Chrome → Menu → Add to Home Screen');
+  }
+}
+
+// ============================================================
+// SERVICE WORKER — OFFLINE SUPPORT
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/mywallet/sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
